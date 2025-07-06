@@ -4,53 +4,29 @@ import lombok.*;
 
 
 import java.util.List;
+import java.util.UUID;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class fleetOperatorDTO {
 
-    private String operator_type;
-    private String organization_name;
+    // From `users` table
+    private UUID userId;
+    private String fullName;
+    private String username;
+    private String email;
+    private String role;
+    private String accountStatus;
+    private Boolean isVerified;
+
+    // From `fleetoperator_profile` table
+    private String operatorType;
+    private String organizationName;
     private String region;
-    private String registration_id;
-    private List<String> contact_details;
+    private String registrationId;
 
-    // Getters
-//    public String getOperatorType() {
-//        return operator_type;
-//    }
-//
-//    public String getOrganizationName() {
-//        return organization_name;
-//    }
-//    public String getRegion() {
-//        return region;
-//    }
-//
-//    public String getRegistrationId() {
-//        return registration_id;
-//    }
-//
-//    public List<String> getContactDetails() {
-//        return contact_details;
-//    }
 
-    // Setters
-//    public void setOperatorType(String operatorType) {
-//        this.operator_type = operatorType;
-//    }
-//
-//    public void setOrganizationName(String organizationName) {
-//        this.organization_name = organizationName;
-//    }
-//
-//    public void setRegistrationId(String registrationId) {
-//        this.registration_id = registrationId;
-//    }
-//
-//    public void setContactDetails(List<String> contactDetails) {
-//        this.contact_details = contactDetails;
-//    }
 }
 
 

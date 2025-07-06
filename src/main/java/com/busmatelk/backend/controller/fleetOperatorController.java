@@ -18,7 +18,6 @@ public class fleetOperatorController {
     @PostMapping(path = "/create")
     public String addFleetOperator(@RequestBody fleetOperatorDTO fleetOperatorDTO, @RequestHeader("Authorization") String token) {
 
-
         fleetOperatorProfileService.addfleetOperatorProfile(fleetOperatorDTO);
         return "success";
     }
