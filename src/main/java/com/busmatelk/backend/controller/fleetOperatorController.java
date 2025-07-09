@@ -8,14 +8,14 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/fleetoperator")
 @CrossOrigin
 public class fleetOperatorController {
 
     @Autowired
     private fleetOperatorProfileService fleetOperatorProfileService;
 
-    @PostMapping(path = "/create")
+    @PostMapping(path = "/register")
     public String addFleetOperator(@RequestBody fleetOperatorDTO fleetOperatorDTO, @RequestHeader("Authorization") String token) {
 
         fleetOperatorProfileService.addfleetOperatorProfile(fleetOperatorDTO);
