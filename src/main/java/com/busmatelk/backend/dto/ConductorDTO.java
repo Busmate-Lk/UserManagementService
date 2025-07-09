@@ -1,14 +1,15 @@
 package com.busmatelk.backend.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
-
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PassengerDTO {
+public class ConductorDTO {
 
     // From `users` table
     private UUID userId;
@@ -19,7 +20,9 @@ public class PassengerDTO {
     private String accountStatus;
     private Boolean isVerified;
 
-    //for passenger table
+    //for conductor
+    private String employee_id;
+    private String assign_operator_id;
+    private String shift_status;
 
-    private String notification_preferences;
 }

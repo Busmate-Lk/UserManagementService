@@ -9,15 +9,16 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
-public class Passenger {
-
+public class Conductor {
     @Id
     @Column(name = "user_id")
     private UUID userId;
-    private String notification_preferences;
+    private String employee_id;
+    private String assign_operator_id;
+    private String shift_status;
 }
