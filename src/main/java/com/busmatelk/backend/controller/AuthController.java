@@ -1,7 +1,6 @@
 package com.busmatelk.backend.controller;
 
 import com.busmatelk.backend.dto.request.LoginRequestDTO;
-import com.busmatelk.backend.dto.request.LoginRequestDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
