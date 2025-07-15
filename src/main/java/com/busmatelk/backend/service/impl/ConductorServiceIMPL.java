@@ -48,4 +48,26 @@ public class ConductorServiceIMPL implements ConductorService {
 
 
     }
+
+    @Override
+    public ConductorDTO getconductorsById(UUID userId) {
+        User user = userRepo.findById(userId).get();
+        Conductor conductor = new Conductor();
+
+        ConductorDTO conductorDTO = new ConductorDTO();
+        conductorDTO.setUserId(user.getUserId());
+        conductorDTO.setFullName(user.getFullName());
+        conductorDTO.setUsername(user.getUsername());
+        conductorDTO.setEmail(user.getEmail());
+        conductorDTO.setRole(user.getRole());
+        conductorDTO.setAccountStatus(user.getAccountStatus());
+        conductorDTO.setIsVerified(user.getIsVerified());
+
+        conductorDTO.setEmployee_id(conductor.getEmployee_id());
+        conductorDTO.setShift_status(conductor.getShift_status());
+        conductorDTO.setAssign_operator_id(conductor.getAssign_operator_id());
+        return conductorDTO;
+    }
+
+
 }
