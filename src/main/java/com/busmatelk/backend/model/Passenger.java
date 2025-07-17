@@ -1,9 +1,6 @@
 package com.busmatelk.backend.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,4 +18,9 @@ public class Passenger {
     @Column(name = "user_id")
     private UUID userId;
     private String notification_preferences;
+
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "user_id")  // This is both PK and FK
+    private User user;
 }

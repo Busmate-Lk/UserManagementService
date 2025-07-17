@@ -45,4 +45,24 @@ public class PassengerServiceIMPL implements PassengerService {
 
         passengerRepo.save(passenger);
     }
+
+    @Override
+    public PassengerDTO getPassengerById(UUID userId) {
+
+        User user = userRepo.findById(userId).get();
+        Passenger passenger = passengerRepo.findById(userId).get();
+        PassengerDTO passengerDTO = new PassengerDTO();
+        passengerDTO.setUserId(user.getUserId());
+        passengerDTO.setFullName(user.getFullName());
+        passengerDTO.setUsername(user.getUsername());
+        passengerDTO.setEmail(user.getEmail());
+        passengerDTO.setRole(user.getRole());
+        passengerDTO.setAccountStatus(user.getAccountStatus());
+        passengerDTO.setIsVerified(user.getIsVerified());
+
+        passengerDTO.setNotification_preferences(passenger.getNotification_preferences());
+
+        return passengerDTO;
+
+    }
 }
