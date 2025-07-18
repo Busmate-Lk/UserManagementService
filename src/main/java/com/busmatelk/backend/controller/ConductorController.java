@@ -30,4 +30,8 @@ public class ConductorController {
     }
 
 
+    @PutMapping(path = "/update")
+    public ConductorDTO updateConductor(@RequestBody ConductorDTO conductorDTO, @RequestParam UUID userId) {
+        return conductorService.updateconductor(conductorDTO,userId);
+    }
 }

@@ -6,9 +6,17 @@ import com.busmatelk.backend.model.User;
 import com.busmatelk.backend.repository.PassengerRepo;
 import com.busmatelk.backend.repository.UserRepo;
 import com.busmatelk.backend.service.PassengerService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -21,30 +29,74 @@ public class PassengerServiceIMPL implements PassengerService {
     @Autowired
     private PassengerRepo passengerRepo;
 
+    @Value("${supabase.anon-key}")
+    private String supabaseAnonKey;
+
     @Override
     public void createPassenger(PassengerDTO passengerDTO) {
+        try {
+            // Step 1: Register user with Supabase Auth API
+            HttpClient client = HttpClient.newHttpClient();
 
-        // Map to User
-        User user = new User();
-//        user.setUserId(UUID.randomUUID());
-        user.setUserId(UUID.fromString("58942478-16f7-4afa-9b00-1fbe9ef4bad7"));
+            String requestBody = String.format("""
+                    {
+                        "email": "%s",
+                        "password": "%s"
+                    }
+                """, passengerDTO.getEmail(), passengerDTO.getPassword());
 
-        user.setFullName(passengerDTO.getFullName());
-        user.setUsername(passengerDTO.getUsername());
-        user.setEmail(passengerDTO.getEmail());
-        user.setRole(passengerDTO.getRole());
-        user.setAccountStatus(passengerDTO.getAccountStatus());
-        user.setIsVerified(passengerDTO.getIsVerified());
-        user.setCreatedAt(Instant.now());
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://gvxbzcxjueghvrtsfdxc.supabase.co/auth/v1/signup"))
+                    .header("Content-Type", "application/json")
+                    .header("apikey", supabaseAnonKey)
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .build();
 
-        userRepo.save(user);
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        Passenger passenger = new Passenger();
-        passenger.setUserId(user.getUserId());
-        passenger.setNotification_preferences(passengerDTO.getNotification_preferences());
+            if (response.statusCode() != 200 && response.statusCode() != 201) {
+                throw new RuntimeException("Supabase signup failed: " + response.body());
+            }
 
-        passengerRepo.save(passenger);
+            // Step 2: Extract userId from response JSON
+            String responseBody = response.body();
+//            System.out.println("Supabase response: " + responseBody); // Debugging
+
+            String userIdString = extractUserIdFromJson(responseBody);
+            if (userIdString == null || userIdString.isBlank()) {
+                throw new RuntimeException("User ID missing in Supabase response");
+            }
+
+            UUID userId = UUID.fromString(userIdString);
+
+            // Step 3: Map to User entity
+            User user = new User();
+            user.setUserId(userId);
+            user.setFullName(passengerDTO.getFullName());
+            user.setUsername(passengerDTO.getUsername());
+            user.setEmail(passengerDTO.getEmail());
+            user.setRole("Passenger");
+            user.setAccountStatus(passengerDTO.getAccountStatus());
+            user.setIsVerified(passengerDTO.getIsVerified());
+            user.setCreatedAt(Instant.now());
+
+            userRepo.save(user); // ✅ Persisting User
+
+// ✅ Step 4: Use the same User object
+            Passenger passenger = new Passenger();
+            passenger.setUser(user); // ✅ Correct way: reuse the same User entity
+            passenger.setNotification_preferences(passengerDTO.getNotification_preferences());
+
+            passengerRepo.save(passenger);
+            System.out.println(userId);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Passenger creation failed: " + e.getMessage(), e);
+        }
     }
+
 
     @Override
     public PassengerDTO getPassengerById(UUID userId) {
@@ -64,5 +116,19 @@ public class PassengerServiceIMPL implements PassengerService {
 
         return passengerDTO;
 
+    }
+
+    private String extractUserIdFromJson(String json) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(json);
+
+        if (root.has("id")) {
+            return root.get("id").asText();  // ✅ user ID is at root
+        } else if (root.has("user") && root.get("user").has("id")) {
+            // fallback in case Supabase returns "user" wrapping
+            return root.get("user").get("id").asText();
+        } else {
+            throw new RuntimeException("Unexpected Supabase response: " + json);
+        }
     }
 }

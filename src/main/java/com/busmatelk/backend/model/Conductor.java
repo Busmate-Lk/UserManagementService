@@ -1,9 +1,6 @@
 package com.busmatelk.backend.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,4 +20,13 @@ public class Conductor {
     private String employee_id;
     private String assign_operator_id;
     private String shift_status;
+    private String NicNumber;
+    private String Dateofbirth;
+    private String pr_img_path;
+
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "user_id")  // This is both PK and FK
+    private User user;
+
 }

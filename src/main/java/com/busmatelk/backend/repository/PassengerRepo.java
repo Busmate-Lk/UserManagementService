@@ -11,4 +11,7 @@ import java.util.UUID;
 @EnableJpaRepositories
 @Repository
 public interface PassengerRepo extends JpaRepository<Passenger, UUID> {
+
+
+    Passenger findByUserId(UUID userId);
 }

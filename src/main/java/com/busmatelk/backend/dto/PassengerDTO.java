@@ -19,7 +19,10 @@ public class PassengerDTO {
     private String accountStatus;
     private Boolean isVerified;
 
+
+    private String password;
     //for passenger table
+
 
     private String notification_preferences;
 }

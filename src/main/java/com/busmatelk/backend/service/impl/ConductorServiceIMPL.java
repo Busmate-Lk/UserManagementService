@@ -70,7 +70,7 @@ public class ConductorServiceIMPL implements ConductorService {
             user.setFullName(conductorDTO.getFullName());
             user.setUsername(conductorDTO.getUsername());
             user.setEmail(conductorDTO.getEmail());
-            user.setRole(conductorDTO.getRole());
+            user.setRole("Conductor");
             user.setAccountStatus(conductorDTO.getAccountStatus());
             user.setIsVerified(conductorDTO.getIsVerified());
             user.setCreatedAt(Instant.now());
