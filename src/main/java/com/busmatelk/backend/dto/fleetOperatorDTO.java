@@ -26,6 +26,9 @@ public class fleetOperatorDTO {
     private String region;
     private String registrationId;
 
+    // passward set for dto
+    private String password;
+
 
 }
 

@@ -45,4 +45,10 @@ public class User {
 
     @Column(name = "updated_at")
     private Instant updatedAt;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Conductor conductor;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Passenger passenger;
 }

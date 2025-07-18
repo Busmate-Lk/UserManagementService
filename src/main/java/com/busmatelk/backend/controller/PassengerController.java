@@ -6,6 +6,8 @@ import com.busmatelk.backend.service.PassengerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/passenger")
 @CrossOrigin
@@ -19,5 +21,10 @@ public class PassengerController {
         System.out.println(passengerDTO);
         passengerService.createPassenger(passengerDTO);
         return "success";
+    }
+
+    @GetMapping(path = "/profile")
+    public PassengerDTO getPassengerById(@RequestParam UUID userId) {
+        return  passengerService.getPassengerById(userId);
     }
 }

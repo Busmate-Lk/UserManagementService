@@ -19,10 +19,18 @@ public class ConductorDTO {
     private String role;
     private String accountStatus;
     private Boolean isVerified;
+    private String phoneNumber;
 
     //for conductor
     private String employee_id;
     private String assign_operator_id;
     private String shift_status;
+    private String NicNumber;
+    private String dateOfBirth;
+    private String gender;
+
+    //for auth
+    private String password;
+
 
 }
