@@ -2,14 +2,13 @@ package com.busmatelk.backend.dto;
 
 import lombok.*;
 
-
-import java.util.List;
 import java.util.UUID;
+
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class fleetOperatorDTO {
+public class PassengerDTO {
 
     // From `users` table
     private UUID userId;
@@ -20,16 +19,10 @@ public class fleetOperatorDTO {
     private String accountStatus;
     private Boolean isVerified;
 
-    // From `fleetoperator_profile` table
-    private String operatorType;
-    private String organizationName;
-    private String region;
-    private String registrationId;
 
-    // passward set for dto
     private String password;
+    //for passenger table
 
 
+    private String notification_preferences;
 }
-
-
