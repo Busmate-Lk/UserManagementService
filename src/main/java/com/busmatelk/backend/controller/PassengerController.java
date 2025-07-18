@@ -18,7 +18,7 @@ public class PassengerController {
 
     @PostMapping(path = "/register")
     public String addPassenger(@RequestBody PassengerDTO passengerDTO) {
-        System.out.println(passengerDTO);
+        //System.out.println(passengerDTO);
         passengerService.createPassenger(passengerDTO);
         return "success";
     }
