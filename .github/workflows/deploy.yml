@@ -24,21 +24,27 @@ jobs:
 
       - name: Copy files to EC2
         uses: appleboy/scp-action@v0.1.6
+        env:
+          SSH_PASSPHRASE: busmate
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE || '' }}
+          # passphrase: ${{ secrets.SSH_PASSPHRASE || '' }}
+          passphrase: $SSH_PASSPHRASE
           source: "Dockerfile,target/*.jar"
           target: "~/app-${{ github.repository_owner }}-${{ github.event.repository.name }}"
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          SSH_PASSPHRASE: busmate
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE || '' }}
+          # passphrase: ${{ secrets.SSH_PASSPHRASE || '' }}
+          passphrase: $SSH_PASSPHRASE
           script: |
             cd ~/app-${{ github.repository_owner }}-${{ github.event.repository.name }}
             docker stop ${GITHUB_REPOSITORY##*/} || true
