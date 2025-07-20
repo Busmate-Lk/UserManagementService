@@ -28,6 +28,7 @@ public class ConductorDTO {
     private String NicNumber;
     private String dateOfBirth;
     private String gender;
+    private String pr_img_path;
 
     //for auth
     private String password;

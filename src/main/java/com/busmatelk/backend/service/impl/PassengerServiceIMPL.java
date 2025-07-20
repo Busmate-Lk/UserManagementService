@@ -84,8 +84,9 @@ public class PassengerServiceIMPL implements PassengerService {
 
 // ✅ Step 4: Use the same User object
 
+            User user1 = userRepo.getReferenceById(userId);
             Passenger passenger = new Passenger();
-            passenger.setUser(user); // ✅ Correct way: reuse the same User entity
+            passenger.setUser(user1); // ✅ Correct way: reuse the same User entity
             passenger.setNotification_preferences(passengerDTO.getNotification_preferences());
 
             passengerRepo.save(passenger);

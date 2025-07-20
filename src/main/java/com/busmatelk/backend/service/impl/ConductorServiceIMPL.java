@@ -4,7 +4,6 @@ import com.busmatelk.backend.dto.ConductorDTO;
 import com.busmatelk.backend.model.Conductor;
 import com.busmatelk.backend.model.User;
 import com.busmatelk.backend.repository.ConductorRepo;
-import com.busmatelk.backend.repository.PassengerRepo;
 import com.busmatelk.backend.repository.UserRepo;
 import com.busmatelk.backend.service.ConductorService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URI;
@@ -32,10 +32,15 @@ public class ConductorServiceIMPL implements ConductorService {
 
     @Value("${supabase.anon-key}")
     private String supabaseAnonKey;
+
+    @Value("${supabase.api.key}")
+    private String SUPABASE_API_KEY;
+
     @Override
     public void createConductor(ConductorDTO conductorDTO) {
 
          try {
+
             // Step 1: Call Supabase Auth API to register user
             HttpClient client = HttpClient.newHttpClient();
 
@@ -59,12 +64,14 @@ public class ConductorServiceIMPL implements ConductorService {
                 throw new RuntimeException("Supabase signup failed: " + response.body());
             }
 
-            // Step 2: Extract userId from response JSON
-            String responseBody = response.body();
-            String userIdString = extractUserIdFromJson(responseBody);
-            UUID userId = UUID.fromString(userIdString);
+             // Step 2: Extract userId from response JSON
+             String responseBody = response.body();
+             String userIdString = extractUserIdFromJson(responseBody);
+             UUID userId = UUID.fromString(userIdString);
 
-            // Step 3: Save to your users table
+
+
+            // Step 4: Save to your users table
             User user = new User();
             user.setUserId(userId);
             user.setFullName(conductorDTO.getFullName());
@@ -85,7 +92,7 @@ public class ConductorServiceIMPL implements ConductorService {
             conductor.setShift_status(conductorDTO.getShift_status());
             conductor.setNicNumber(conductorDTO.getNicNumber());
             conductor.setDateofbirth(conductorDTO.getDateOfBirth());
-//            conductor.setPr_img_path(conductorDTO.getP);
+            conductor.setPr_img_path(conductor.getPr_img_path());
 
 
             conductorRepo.save(conductor);
@@ -93,21 +100,6 @@ public class ConductorServiceIMPL implements ConductorService {
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException("Failed to create conductor: " + e.getMessage(), e);
         }
-
-
-//        // ✅ Helper method to extract user.id from Supabase JSON
-//        private String extractUserIdFromJson(String json) throws IOException {
-//            ObjectMapper mapper = new ObjectMapper();
-//            JsonNode root = mapper.readTree(json);
-//
-//            if (root.has("user") && root.get("user").has("id")) {
-//                return root.get("user").get("id").asText();
-//            } else if (root.has("error")) {
-//                throw new RuntimeException("Supabase returned error: " + root.get("error").toString());
-//            } else {
-//                throw new RuntimeException("Unexpected Supabase response: " + json);
-//            }
-//        }
 
     }
 
@@ -152,12 +144,10 @@ public class ConductorServiceIMPL implements ConductorService {
     }
 
     @Override
-    public ConductorDTO updateconductor(ConductorDTO conductorDTO, UUID userId) {
+    public ConductorDTO updateconductor(ConductorDTO conductorDTO, UUID userId, MultipartFile file) {
         // Fetch user
-        User user = userRepo.findById(userId).get();
-        if (user == null) {
-            throw new RuntimeException("User not found with ID: " + userId);
-        }
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         // Fetch existing conductor linked to the user
         Conductor conductor = conductorRepo.findByUserId(user.getUserId());
@@ -165,8 +155,40 @@ public class ConductorServiceIMPL implements ConductorService {
             throw new RuntimeException("Conductor not found for user ID: " + userId);
         }
 
+        //
+        // step 3: upload profile image to Supabase Storage
+
+        String SUPABASE_URL = "https://gvxbzcxjueghvrtsfdxc.supabase.co";
+        String SUPABASE_BUCKET = "profile-photos";
+        try {
+            String uploadUrl = SUPABASE_URL + "/storage/v1/object/" + SUPABASE_BUCKET + "/" + file.getOriginalFilename() + "?insert=overwrite";
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(uploadUrl))
+                    .header("Authorization", "Bearer " + SUPABASE_API_KEY)
+                    .header("Content-Type", file.getContentType())
+                    .PUT(HttpRequest.BodyPublishers.ofByteArray(file.getBytes()))
+                    .build();
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200 && response.statusCode() != 201) {
+                throw new RuntimeException("Failed to upload image: " + response.body());
+            }
+
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException("Failed to upload image", e);
+        }
+
+        // Step 3: Set the profile image path in the DTO
+        conductorDTO.setPr_img_path(SUPABASE_URL + "/storage/v1/object/public/" + SUPABASE_BUCKET + "/" + file.getOriginalFilename());
+
+
+
         // Update fields (example fields — change as per your DTO)
         conductor.setShift_status(conductorDTO.getShift_status());
+        conductor.setPr_img_path(conductorDTO.getPr_img_path());
         user.setPhoneNumber(conductorDTO.getPhoneNumber());
         user.setFullName(conductorDTO.getFullName());
         user.setAccountStatus(conductorDTO.getAccountStatus());
@@ -191,6 +213,7 @@ public class ConductorServiceIMPL implements ConductorService {
         dto.setEmployee_id(conductor.getEmployee_id());
         dto.setAssign_operator_id(conductor.getAssign_operator_id());
         dto.setShift_status(conductor.getShift_status());
+        dto.setPr_img_path(conductor.getPr_img_path());
 
         return dto;
     }
