@@ -2,8 +2,6 @@ package com.busmatelk.backend.dto;
 
 import lombok.*;
 
-
-import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -16,6 +14,7 @@ public class fleetOperatorDTO {
     private String fullName;
     private String username;
     private String email;
+    private String phoneNumber;  // Added phoneNumber field
 //    private String role;
     private String accountStatus;
     private Boolean isVerified;
@@ -31,5 +30,3 @@ public class fleetOperatorDTO {
 
 
 }
-
-
