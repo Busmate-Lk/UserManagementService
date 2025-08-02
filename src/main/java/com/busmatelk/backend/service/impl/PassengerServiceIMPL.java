@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.net.URI;
@@ -36,6 +37,7 @@ public class PassengerServiceIMPL implements PassengerService {
     private String supabaseServiceRoleKey;
 
     @Override
+    @Transactional
     public void createPassenger(PassengerDTO passengerDTO) {
         try {
             // Step 1: Register user with Supabase Auth API
