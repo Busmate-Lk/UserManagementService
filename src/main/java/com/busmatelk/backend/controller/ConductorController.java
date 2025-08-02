@@ -4,7 +4,6 @@ import com.busmatelk.backend.dto.ConductorDTO;
 import com.busmatelk.backend.service.ConductorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -32,7 +31,7 @@ public class ConductorController {
 
 
     @PutMapping(path = "/update")
-    public ConductorDTO updateConductor(@RequestBody ConductorDTO conductorDTO, @RequestParam UUID userId,@RequestPart("file") MultipartFile file) {
-        return conductorService.updateconductor(conductorDTO,userId, file);
+    public ConductorDTO updateConductor(@RequestBody ConductorDTO conductorDTO, @RequestParam UUID userId) {
+        return conductorService.updateconductor(conductorDTO,userId);
     }
 }

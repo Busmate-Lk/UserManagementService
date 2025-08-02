@@ -25,7 +25,7 @@ public class ConductorDTO {
     private String employee_id;
     private String assign_operator_id;
     private String shift_status;
-    private String NicNumber;
+    private String nicNumber;
     private String dateOfBirth;
     private String gender;
     private String pr_img_path;

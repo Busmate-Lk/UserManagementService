@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.net.URI;
@@ -37,6 +37,7 @@ public class ConductorServiceIMPL implements ConductorService {
     private String SUPABASE_API_KEY;
 
     @Override
+    @Transactional
     public void createConductor(ConductorDTO conductorDTO) {
 
          try {
@@ -83,21 +84,22 @@ public class ConductorServiceIMPL implements ConductorService {
             user.setCreatedAt(Instant.now());
             user.setPhoneNumber(conductorDTO.getPhoneNumber());
 
-            userRepo.save(user);
+            user = userRepo.save(user);
 
-            // Step 4: Save to conductor_profile
+            // Step 5: Save to conductor_profile
             Conductor conductor = new Conductor();
-            conductor.setUserId(userId);
+            conductor.setEmployee_id(conductorDTO.getEmployee_id());
             conductor.setAssign_operator_id(conductorDTO.getAssign_operator_id());
             conductor.setShift_status(conductorDTO.getShift_status());
             conductor.setNicNumber(conductorDTO.getNicNumber());
             conductor.setDateofbirth(conductorDTO.getDateOfBirth());
-            conductor.setPr_img_path(conductor.getPr_img_path());
+//            conductor.setPr_img_path(conductor.getPr_img_path());
+            conductor.setUser(user);
 
 
             conductorRepo.save(conductor);
 
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to create conductor: " + e.getMessage(), e);
         }
 
@@ -122,7 +124,7 @@ public class ConductorServiceIMPL implements ConductorService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Conductor conductor = conductorRepo.findByUserId(user.getUserId());
+//        Conductor conductor = conductorRepo.findById(user.getUserId());
 
         ConductorDTO conductorDTO = new ConductorDTO();
 
@@ -135,54 +137,25 @@ public class ConductorServiceIMPL implements ConductorService {
         conductorDTO.setIsVerified(user.getIsVerified());
         conductorDTO.setPhoneNumber(user.getPhoneNumber());
 
-        conductorDTO.setEmployee_id(conductor.getEmployee_id());
-        conductorDTO.setShift_status(conductor.getShift_status());
-        conductorDTO.setAssign_operator_id(conductor.getAssign_operator_id());
+//        conductorDTO.setEmployee_id(conductor.getEmployee_id());
+//        conductorDTO.setShift_status(conductor.getShift_status());
+//        conductorDTO.setAssign_operator_id(conductor.getAssign_operator_id());
 
-        System.out.println(conductorDTO);
+        System.out.println(user);
         return conductorDTO;
     }
 
     @Override
-    public ConductorDTO updateconductor(ConductorDTO conductorDTO, UUID userId, MultipartFile file) {
+    public ConductorDTO updateconductor(ConductorDTO conductorDTO, UUID userId) {
         // Fetch user
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         // Fetch existing conductor linked to the user
-        Conductor conductor = conductorRepo.findByUserId(user.getUserId());
+        Conductor conductor = conductorRepo.findById(user.getUserId());
         if (conductor == null) {
             throw new RuntimeException("Conductor not found for user ID: " + userId);
         }
-
-        //
-        // step 3: upload profile image to Supabase Storage
-
-        String SUPABASE_URL = "https://gvxbzcxjueghvrtsfdxc.supabase.co";
-        String SUPABASE_BUCKET = "profile-photos";
-        try {
-            String uploadUrl = SUPABASE_URL + "/storage/v1/object/" + SUPABASE_BUCKET + "/" + file.getOriginalFilename() + "?insert=overwrite";
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(uploadUrl))
-                    .header("Authorization", "Bearer " + SUPABASE_API_KEY)
-                    .header("Content-Type", file.getContentType())
-                    .PUT(HttpRequest.BodyPublishers.ofByteArray(file.getBytes()))
-                    .build();
-
-            HttpClient client = HttpClient.newHttpClient();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() != 200 && response.statusCode() != 201) {
-                throw new RuntimeException("Failed to upload image: " + response.body());
-            }
-
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException("Failed to upload image", e);
-        }
-
-        // Step 3: Set the profile image path in the DTO
-        conductorDTO.setPr_img_path(SUPABASE_URL + "/storage/v1/object/public/" + SUPABASE_BUCKET + "/" + file.getOriginalFilename());
 
 
 
