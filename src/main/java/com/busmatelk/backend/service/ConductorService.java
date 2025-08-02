@@ -14,7 +14,5 @@ public interface ConductorService {
 
     List<ConductorDTO> getAllConductors();
 
-//    ConductorDTO updateconductor(ConductorDTO conductorDTO, UUID userId);
 
-//    void createConductor(ConductorDTO conductorDTO, MultipartFile file);
 }
