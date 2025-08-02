@@ -15,12 +15,11 @@ import java.util.UUID;
 public class Passenger {
 
     @Id
-    @Column(name = "user_id")
-    private UUID userId;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID Id;
     private String notification_preferences;
 
     @OneToOne
-    @MapsId
     @JoinColumn(name = "user_id")  // This is both PK and FK
     private User user;
 }

@@ -13,5 +13,5 @@ import java.util.UUID;
 public interface PassengerRepo extends JpaRepository<Passenger, UUID> {
 
 
-    Passenger findByUserId(UUID userId);
+//    Passenger findByUserId(UUID userId);
 }
