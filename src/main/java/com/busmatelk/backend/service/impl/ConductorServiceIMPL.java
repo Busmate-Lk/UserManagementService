@@ -19,6 +19,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -79,7 +81,7 @@ public class ConductorServiceIMPL implements ConductorService {
                      .PUT(HttpRequest.BodyPublishers.ofString("""
             {
               "user_metadata": {
-                "user_role": "Passenger"
+                "user_role": "Conductor"
               }
             }
         """))
@@ -211,6 +213,35 @@ public class ConductorServiceIMPL implements ConductorService {
         dto.setPr_img_path(conductor.getPr_img_path());
 
         return dto;
+    }
+
+    @Override
+    public List<ConductorDTO> getAllConductors() {
+        List<Conductor> conductors = conductorRepo.findAll();
+        List<ConductorDTO> conductorDTOs = new ArrayList<>();
+        for (Conductor conductor : conductors) {
+            User user = conductor.getUser();
+            ConductorDTO dto = new ConductorDTO();
+
+            // From User entity
+            dto.setUserId(user.getUserId());
+            dto.setFullName(user.getFullName());
+            dto.setUsername(user.getUsername());
+            dto.setEmail(user.getEmail());
+            dto.setRole(user.getRole());
+            dto.setAccountStatus(user.getAccountStatus());
+            dto.setIsVerified(user.getIsVerified());
+            dto.setPhoneNumber(user.getPhoneNumber());
+
+            // From Conductor entity
+            dto.setEmployee_id(conductor.getEmployee_id());
+            dto.setAssign_operator_id(conductor.getAssign_operator_id());
+            dto.setShift_status(conductor.getShift_status());
+            dto.setPr_img_path(conductor.getPr_img_path());
+
+            conductorDTOs.add(dto);
+        }
+        return conductorDTOs;
     }
 
 

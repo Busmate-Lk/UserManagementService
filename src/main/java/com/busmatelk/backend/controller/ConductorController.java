@@ -5,6 +5,7 @@ import com.busmatelk.backend.service.ConductorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -33,5 +34,16 @@ public class ConductorController {
     @PutMapping(path = "/update")
     public ConductorDTO updateConductor(@RequestBody ConductorDTO conductorDTO, @RequestParam UUID userId) {
         return conductorService.updateconductor(conductorDTO,userId);
+    }
+
+    @GetMapping(path = "/all")
+    public List<ConductorDTO> getAllConductors() {
+        try {
+            return conductorService.getAllConductors();
+        } catch (Exception e) {
+            // Handle exceptions appropriately, e.g., log the error or return an error response
+            e.printStackTrace();
+            throw new RuntimeException("Failed to retrieve conductors: " + e.getMessage());
+        }
     }
 }
