@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.net.URI;
@@ -32,7 +33,11 @@ public class PassengerServiceIMPL implements PassengerService {
     @Value("${supabase.anon-key}")
     private String supabaseAnonKey;
 
+    @Value("${supabase.api.key}")
+    private String supabaseServiceRoleKey;
+
     @Override
+    @Transactional
     public void createPassenger(PassengerDTO passengerDTO) {
         try {
             // Step 1: Register user with Supabase Auth API
@@ -67,6 +72,29 @@ public class PassengerServiceIMPL implements PassengerService {
                 throw new RuntimeException("User ID missing in Supabase response");
             }
 
+            // Step 2.1: Add user role to Supabase metadata
+            HttpRequest metadataRequest = HttpRequest.newBuilder()
+                    .uri(URI.create("https://gvxbzcxjueghvrtsfdxc.supabase.co/auth/v1/admin/users/" + userIdString))
+                    .header("Content-Type", "application/json")
+                    .header("apikey", supabaseServiceRoleKey)
+                    .header("Authorization", "Bearer " + supabaseServiceRoleKey)
+                    .PUT(HttpRequest.BodyPublishers.ofString("""
+            {
+              "user_metadata": {
+                "user_role": "Passenger"
+              }
+            }
+        """))
+                    .build();
+
+            HttpResponse<String> metadataResponse = client.send(metadataRequest, HttpResponse.BodyHandlers.ofString());
+//            System.out.println("Metadata response code: " + metadataResponse.statusCode());
+//            System.out.println("Metadata response body: " + metadataResponse.body());
+
+            if (metadataResponse.statusCode() != 200) {
+                throw new RuntimeException("Failed to update user metadata: " + metadataResponse.body());
+            }
+
             UUID userId = UUID.fromString(userIdString);
 
             // Step 3: Map to User entity
@@ -80,11 +108,12 @@ public class PassengerServiceIMPL implements PassengerService {
             user.setIsVerified(passengerDTO.getIsVerified());
             user.setCreatedAt(Instant.now());
 
-            userRepo.save(user); // ✅ Persisting User
+            user = userRepo.save(user); // ✅ Persisting User
 
 // ✅ Step 4: Use the same User object
+
             Passenger passenger = new Passenger();
-            passenger.setUser(user); // ✅ Correct way: reuse the same User entity
+            passenger.setUser(user);
             passenger.setNotification_preferences(passengerDTO.getNotification_preferences());
 
             passengerRepo.save(passenger);
@@ -102,7 +131,7 @@ public class PassengerServiceIMPL implements PassengerService {
     public PassengerDTO getPassengerById(UUID userId) {
 
         User user = userRepo.findById(userId).get();
-        Passenger passenger = passengerRepo.findById(userId).get();
+
         PassengerDTO passengerDTO = new PassengerDTO();
         passengerDTO.setUserId(user.getUserId());
         passengerDTO.setFullName(user.getFullName());
@@ -112,7 +141,8 @@ public class PassengerServiceIMPL implements PassengerService {
         passengerDTO.setAccountStatus(user.getAccountStatus());
         passengerDTO.setIsVerified(user.getIsVerified());
 
-        passengerDTO.setNotification_preferences(passenger.getNotification_preferences());
+
+//        passengerDTO.setNotification_preferences(passenger.getNotification_preferences());
 
         return passengerDTO;
 
