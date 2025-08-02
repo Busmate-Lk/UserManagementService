@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -36,5 +37,15 @@ public class fleetOperatorController {
        return fleetOperatorProfileService.getFleetoperatorById(userId);
     }
 
+    @PutMapping(path = "/update")
+    public ResponseEntity<?> updateFleetOperatorProfile(@RequestParam UUID userId, @RequestBody fleetOperatorDTO fleetOperatorDTO,@RequestPart("file") MultipartFile file) {
+        try {
+            fleetOperatorProfileService.updateFleetOperatorProfile(userId, fleetOperatorDTO,file);
+            return ResponseEntity.ok("Fleet operator profile updated successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error occurred: " + e.getMessage());
+        }
+    }
 
 }

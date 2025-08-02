@@ -11,7 +11,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -32,13 +35,17 @@ public class fleetOperatorServiceIMPL implements fleetOperatorProfileService {
     @Value("${supabase.anon-key}")
     private String supabaseAnonKey;
 
+    @Value("${supabase.api.key}")
+    private String supabaseServiceRoleKey;
+
     @Override
+    @Transactional
     public void addfleetOperatorProfile( fleetOperatorDTO fleetOperatorDTO) {
 
-        System.out.println(fleetOperatorDTO.getFullName());
+//        System.out.println(fleetOperatorDTO.getFullName());
 
-        try {
             // Step 1: Call Supabase Auth API to register user
+        try {
             HttpClient client = HttpClient.newHttpClient();
 
             String requestBody = String.format("""
@@ -67,6 +74,30 @@ public class fleetOperatorServiceIMPL implements fleetOperatorProfileService {
             String userIdString = extractUserIdFromJson(responseBody);
             UUID userId = UUID.fromString(userIdString);
 
+            // Step 2.1: Add user role to Supabase metadata
+            HttpRequest metadataRequest = HttpRequest.newBuilder()
+                    .uri(URI.create("https://gvxbzcxjueghvrtsfdxc.supabase.co/auth/v1/admin/users/" + userIdString))
+                    .header("Content-Type", "application/json")
+                    .header("apikey", supabaseServiceRoleKey)
+                    .header("Authorization", "Bearer " + supabaseServiceRoleKey)
+                    .PUT(HttpRequest.BodyPublishers.ofString("""
+            {
+              "user_metadata": {
+                "user_role": "FleetOperator"
+              }
+            }
+        """))
+                    .build();
+
+            HttpResponse<String> metadataResponse = client.send(metadataRequest, HttpResponse.BodyHandlers.ofString());
+//            System.out.println("Metadata response code: " + metadataResponse.statusCode());
+//            System.out.println("Metadata response body: " + metadataResponse.body());
+
+            if (metadataResponse.statusCode() != 200) {
+                throw new RuntimeException("Failed to update user metadata: " + metadataResponse.body());
+            }
+
+
             // Map to User
             User user = new User();
 
@@ -79,22 +110,22 @@ public class fleetOperatorServiceIMPL implements fleetOperatorProfileService {
             user.setIsVerified(fleetOperatorDTO.getIsVerified());
             user.setCreatedAt(Instant.now());
 
-            userRepo.save(user);
+            user = userRepo.save(user);
 
             // Map to FleetOperatorProfile
             fleetOperatorModel profile = new fleetOperatorModel();
-            profile.setUserId(user.getUserId()); // same UUID
             profile.setOperatorType(fleetOperatorDTO.getOperatorType());
             profile.setOrganizationName(fleetOperatorDTO.getOrganizationName());
             profile.setRegion(fleetOperatorDTO.getRegion());
             profile.setRegistrationId(fleetOperatorDTO.getRegistrationId());
 //        profile.setContactDetails(fleetOperatorDTO.getContactDetails());
+            profile.setUser(user); // saving the relationship
 
             fleetOperatorRepo.save(profile);
 
 
         }catch (Exception e){
-            e.printStackTrace();
+//            e.printStackTrace();
             throw new RuntimeException("Supabase signup failed: " + e);
 
             }
@@ -115,6 +146,90 @@ public class fleetOperatorServiceIMPL implements fleetOperatorProfileService {
 
     @Override
     public fleetOperatorDTO getFleetoperatorById(UUID userId) {
-        return null;
+        // Validate input
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID must not be null");
+        }
+        // Fetch user by userId
+        User user = userRepo.findById(userId).orElse(null);
+        if (user == null) {
+            throw new RuntimeException("User not found for id: " + userId);
+        }
+        // Fetch fleet operator profile by userId
+        fleetOperatorModel profile = fleetOperatorRepo.findById(userId).orElse(null);
+        if (profile == null) {
+            throw new RuntimeException("Fleet operator profile not found for user id: " + userId);
+        }
+        // Map to DTO
+        fleetOperatorDTO dto = new fleetOperatorDTO();
+        dto.setUserId(user.getUserId());
+        dto.setFullName(user.getFullName());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setAccountStatus(user.getAccountStatus());
+        dto.setIsVerified(user.getIsVerified());
+        dto.setOperatorType(profile.getOperatorType());
+        dto.setOrganizationName(profile.getOrganizationName());
+        dto.setRegion(profile.getRegion());
+        dto.setRegistrationId(profile.getRegistrationId());
+        // Password is not set for security reasons
+        return dto;
+    }
+
+    @Override
+    public void updateFleetOperatorProfile(UUID userId, fleetOperatorDTO fleetOperatorDTO, MultipartFile file) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID must not be null");
+        }
+        // Update User entity
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found for id: " + userId));
+
+
+
+
+        //step 2: update user details
+        if (fleetOperatorDTO.getFullName() != null) user.setFullName(fleetOperatorDTO.getFullName());
+        if (fleetOperatorDTO.getUsername() != null) user.setUsername(fleetOperatorDTO.getUsername());
+        if (fleetOperatorDTO.getEmail() != null) user.setEmail(fleetOperatorDTO.getEmail());
+        if (fleetOperatorDTO.getAccountStatus() != null) user.setAccountStatus(fleetOperatorDTO.getAccountStatus());
+        if (fleetOperatorDTO.getIsVerified() != null) user.setIsVerified(fleetOperatorDTO.getIsVerified());
+        userRepo.save(user);
+
+        // Update fleetOperatorModel entity
+        fleetOperatorModel profile = fleetOperatorRepo.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Fleet operator profile not found for user id: " + userId));
+
+//        //step 1: update profile image if provided
+//        if (file != null && !file.isEmpty()) {
+//            try {
+//                // Upload file to Supabase Storage
+//                HttpClient client = HttpClient.newHttpClient();
+//                String fileName = userId + "_" + file.getOriginalFilename();
+//                HttpRequest request = HttpRequest.newBuilder()
+//                        .uri(URI.create("https://gvxbzcxjueghvrtsfdxc.supabase.co/storage/v1/object/profile-photos/" + fileName))
+//                        .header("apikey", supabaseAnonKey)
+//                        .header("Content-Type", file.getContentType())
+//                        .PUT(HttpRequest.BodyPublishers.ofByteArray(file.getBytes()))
+//                        .build();
+//
+//                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//
+//                if (response.statusCode() != 200 && response.statusCode() != 201) {
+//                    throw new RuntimeException("Supabase storage upload failed: " + response.body());
+//                }
+//
+//                // Set profile image URL in profile entity
+//                profile.setPr_img_path("https://gvxbzcxjueghvrtsfdxc.supabase.co/storage/v1/object/public/profile-photos/" + fileName);
+//            } catch (Exception e) {
+//                throw new RuntimeException("Failed to upload profile image: " + e.getMessage(), e);
+//            }
+//        }
+        if (fleetOperatorDTO.getOperatorType() != null) profile.setOperatorType(fleetOperatorDTO.getOperatorType());
+        if (fleetOperatorDTO.getOrganizationName() != null) profile.setOrganizationName(fleetOperatorDTO.getOrganizationName());
+        if (fleetOperatorDTO.getRegion() != null) profile.setRegion(fleetOperatorDTO.getRegion());
+        if (fleetOperatorDTO.getRegistrationId() != null) profile.setRegistrationId(fleetOperatorDTO.getRegistrationId());
+        // If you add contact details to DTO, update here as well
+        fleetOperatorRepo.save(profile);
     }
 }

@@ -16,7 +16,7 @@ public class fleetOperatorDTO {
     private String fullName;
     private String username;
     private String email;
-    private String role;
+//    private String role;
     private String accountStatus;
     private Boolean isVerified;
 
