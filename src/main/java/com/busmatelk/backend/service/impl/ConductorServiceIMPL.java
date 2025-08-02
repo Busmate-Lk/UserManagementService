@@ -70,6 +70,28 @@ public class ConductorServiceIMPL implements ConductorService {
              String userIdString = extractUserIdFromJson(responseBody);
              UUID userId = UUID.fromString(userIdString);
 
+             // Step 2.1: Add user role to Supabase metadata
+             HttpRequest metadataRequest = HttpRequest.newBuilder()
+                     .uri(URI.create("https://gvxbzcxjueghvrtsfdxc.supabase.co/auth/v1/admin/users/" + userIdString))
+                     .header("Content-Type", "application/json")
+                     .header("apikey", SUPABASE_API_KEY)
+                     .header("Authorization", "Bearer " + SUPABASE_API_KEY)
+                     .PUT(HttpRequest.BodyPublishers.ofString("""
+            {
+              "user_metadata": {
+                "user_role": "Passenger"
+              }
+            }
+        """))
+                     .build();
+
+             HttpResponse<String> metadataResponse = client.send(metadataRequest, HttpResponse.BodyHandlers.ofString());
+            System.out.println("Metadata response code: " + metadataResponse.statusCode());
+            System.out.println("Metadata response body: " + metadataResponse.body());
+
+             if (metadataResponse.statusCode() != 200) {
+                 throw new RuntimeException("Failed to update user metadata: " + metadataResponse.body());
+             }
 
 
             // Step 4: Save to your users table

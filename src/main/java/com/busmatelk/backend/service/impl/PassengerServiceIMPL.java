@@ -88,8 +88,8 @@ public class PassengerServiceIMPL implements PassengerService {
                     .build();
 
             HttpResponse<String> metadataResponse = client.send(metadataRequest, HttpResponse.BodyHandlers.ofString());
-            System.out.println("Metadata response code: " + metadataResponse.statusCode());
-            System.out.println("Metadata response body: " + metadataResponse.body());
+//            System.out.println("Metadata response code: " + metadataResponse.statusCode());
+//            System.out.println("Metadata response body: " + metadataResponse.body());
 
             if (metadataResponse.statusCode() != 200) {
                 throw new RuntimeException("Failed to update user metadata: " + metadataResponse.body());
