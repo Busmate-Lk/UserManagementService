@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - BM-4-fleet-operator-Management
+      - dev
 
 jobs:
   deploy:
