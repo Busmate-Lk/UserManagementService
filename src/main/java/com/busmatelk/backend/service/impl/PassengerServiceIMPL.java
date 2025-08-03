@@ -20,6 +20,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -192,6 +195,37 @@ public class PassengerServiceIMPL implements PassengerService {
         passengerDTO.setNotification_preferences(passenger.getNotification_preferences());
 
         return passengerDTO;
+    }
+
+    @Override
+    public List<PassengerDTO> getAllPassengers() {
+        // Get all users with role "Passenger"
+        List<User> passengerUsers = userRepo.findByRole("Passenger");
+
+        List<PassengerDTO> passengerDTOs = new ArrayList<>();
+
+        for (User user : passengerUsers) {
+            // Find the passenger profile for each user
+            Optional<Passenger> passengerOpt = passengerRepo.findByUserUserId(user.getUserId());
+
+            PassengerDTO passengerDTO = new PassengerDTO();
+            passengerDTO.setUserId(user.getUserId());
+            passengerDTO.setFullName(user.getFullName());
+            passengerDTO.setUsername(user.getUsername());
+            passengerDTO.setEmail(user.getEmail());
+            passengerDTO.setRole(user.getRole());
+            passengerDTO.setAccountStatus(user.getAccountStatus());
+            passengerDTO.setIsVerified(user.getIsVerified());
+
+            // Set notification preferences if passenger profile exists
+            if (passengerOpt.isPresent()) {
+                passengerDTO.setNotification_preferences(passengerOpt.get().getNotification_preferences());
+            }
+
+            passengerDTOs.add(passengerDTO);
+        }
+
+        return passengerDTOs;
     }
 
     private String extractUserIdFromJson(String json) throws IOException {

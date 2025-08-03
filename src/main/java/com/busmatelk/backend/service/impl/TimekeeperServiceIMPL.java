@@ -100,4 +100,27 @@ public class TimekeeperServiceIMPL implements TimekeeperService {
             throw new RuntimeException("Unexpected Supabase response: " + json);
         }
     }
+
+    @Override
+    public TimekeeperDTO getTimekeeperById(UUID userId) {
+        // Find the user
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        // Find the timekeeper
+        Timekeeper timekeeper = timekeeperRepo.findByUserUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Timekeeper not found with user ID: " + userId));
+
+        // Map to DTO
+        TimekeeperDTO timekeeperDTO = new TimekeeperDTO();
+        timekeeperDTO.setFullname(user.getFullName());
+        timekeeperDTO.setEmail(user.getEmail());
+        timekeeperDTO.setPhonenumber(user.getPhoneNumber());
+        timekeeperDTO.setAssign_stand(timekeeper.getAssignStand());
+        timekeeperDTO.setNic(timekeeper.getNic());
+        timekeeperDTO.setProvince(timekeeper.getProvince());
+        // Note: password is not set for security reasons
+
+        return timekeeperDTO;
+    }
 }
