@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -39,6 +40,16 @@ public class PassengerController {
             return ResponseEntity.ok(updatedPassenger);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping(path = "/all")
+    public ResponseEntity<List<PassengerDTO>> getAllPassengers() {
+        try {
+            List<PassengerDTO> passengers = passengerService.getAllPassengers();
+            return ResponseEntity.ok(passengers);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 }
