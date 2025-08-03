@@ -2,8 +2,10 @@ package com.busmatelk.backend.controller;
 
 
 import com.busmatelk.backend.dto.PassengerDTO;
+import com.busmatelk.backend.dto.request.PassengerUpdateDTO;
 import com.busmatelk.backend.service.PassengerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -26,5 +28,17 @@ public class PassengerController {
     @GetMapping(path = "/profile")
     public PassengerDTO getPassengerById(@RequestParam UUID userId) {
         return  passengerService.getPassengerById(userId);
+    }
+
+    @PutMapping(path = "/update/{userId}")
+    public ResponseEntity<PassengerDTO> updatePassenger(
+            @PathVariable UUID userId,
+            @RequestBody PassengerUpdateDTO updateDTO) {
+        try {
+            PassengerDTO updatedPassenger = passengerService.updatePassenger(userId, updateDTO);
+            return ResponseEntity.ok(updatedPassenger);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

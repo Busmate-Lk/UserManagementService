@@ -6,12 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @EnableJpaRepositories
 @Repository
 public interface PassengerRepo extends JpaRepository<Passenger, UUID> {
 
-
-//    Passenger findByUserId(UUID userId);
+    Optional<Passenger> findByUserUserId(UUID userId);
 }
