@@ -1,6 +1,7 @@
 package com.busmatelk.backend.service.impl;
 
 import com.busmatelk.backend.dto.PassengerDTO;
+import com.busmatelk.backend.dto.request.PassengerUpdateDTO;
 import com.busmatelk.backend.model.Passenger;
 import com.busmatelk.backend.model.User;
 import com.busmatelk.backend.repository.PassengerRepo;
@@ -146,6 +147,51 @@ public class PassengerServiceIMPL implements PassengerService {
 
         return passengerDTO;
 
+    }
+
+    @Override
+    @Transactional
+    public PassengerDTO updatePassenger(UUID userId, PassengerUpdateDTO updateDTO) {
+        // Find the user
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        // Find the passenger
+        Passenger passenger = passengerRepo.findByUserUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Passenger not found with user ID: " + userId));
+
+        // Update user fields (only allowed fields)
+        if (updateDTO.getFullName() != null && !updateDTO.getFullName().trim().isEmpty()) {
+            user.setFullName(updateDTO.getFullName());
+        }
+        if (updateDTO.getPhoneNumber() != null) {
+            user.setPhoneNumber(updateDTO.getPhoneNumber());
+        }
+        if (updateDTO.getUsername() != null && !updateDTO.getUsername().trim().isEmpty()) {
+            user.setUsername(updateDTO.getUsername());
+        }
+
+        // Update passenger fields
+        if (updateDTO.getNotification_preferences() != null) {
+            passenger.setNotification_preferences(updateDTO.getNotification_preferences());
+        }
+
+        // Save changes
+        user = userRepo.save(user);
+        passenger = passengerRepo.save(passenger);
+
+        // Return updated passenger DTO
+        PassengerDTO passengerDTO = new PassengerDTO();
+        passengerDTO.setUserId(user.getUserId());
+        passengerDTO.setFullName(user.getFullName());
+        passengerDTO.setUsername(user.getUsername());
+        passengerDTO.setEmail(user.getEmail());
+        passengerDTO.setRole(user.getRole());
+        passengerDTO.setAccountStatus(user.getAccountStatus());
+        passengerDTO.setIsVerified(user.getIsVerified());
+        passengerDTO.setNotification_preferences(passenger.getNotification_preferences());
+
+        return passengerDTO;
     }
 
     private String extractUserIdFromJson(String json) throws IOException {
