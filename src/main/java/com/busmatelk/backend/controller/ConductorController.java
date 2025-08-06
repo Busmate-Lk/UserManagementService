@@ -46,4 +46,16 @@ public class ConductorController {
             throw new RuntimeException("Failed to retrieve conductors: " + e.getMessage());
         }
     }
+
+    @DeleteMapping(path = "/delete/{userId}")
+    public String deleteConductor(@PathVariable UUID userId) {
+        try {
+            conductorService.deleteConductor(userId);
+            return "Conductor deleted successfully";
+        } catch (Exception e) {
+            // Handle exceptions appropriately, e.g., log the error or return an error response
+            e.printStackTrace();
+            return "Failed to delete conductor: " + e.getMessage();
+        }
+    }
 }
