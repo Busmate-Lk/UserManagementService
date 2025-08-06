@@ -5,4 +5,6 @@ import com.busmatelk.backend.dto.MotDTO;
 public interface MotService {
 
     void createMotUser(MotDTO motDTO);
+
+    MotDTO getMotById(String userId);
 }

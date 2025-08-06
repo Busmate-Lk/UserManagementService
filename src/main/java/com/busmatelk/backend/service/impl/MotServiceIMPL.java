@@ -85,6 +85,24 @@ public class MotServiceIMPL implements MotService {
         }
 
     }
+
+    @Override
+    public MotDTO getMotById(String userId) {
+        User user = userRepo.findById(UUID.fromString(userId))
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+        MotDTO motDTO = new MotDTO();
+        motDTO.setUserId(user.getUserId());
+        motDTO.setFullName(user.getFullName());
+        motDTO.setUsername(user.getUsername());
+        motDTO.setEmail(user.getEmail());
+        motDTO.setAccountStatus(user.getAccountStatus());
+        motDTO.setIsVerified(user.getIsVerified());
+        motDTO.setRole(user.getRole());
+
+
+        return motDTO;
+    }
+
     private String extractUserIdFromJson(String json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root = mapper.readTree(json);

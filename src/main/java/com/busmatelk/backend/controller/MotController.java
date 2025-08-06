@@ -20,9 +20,10 @@ public class MotController {
         motService.createMotUser(motDTO);
         return "success";
     }
-//
-//    @GetMapping(path = "/getuser")
-//    public MotDTO getMotUser() {
-//
-//    }
+
+    @GetMapping(path = "/profile")
+    public MotDTO getMotById(@RequestParam String userId) {
+        // System.out.println(conductorService.getconductorsById(userId));
+        return motService.getMotById(userId);
+    }
 }
