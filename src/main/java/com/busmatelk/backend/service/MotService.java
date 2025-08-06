@@ -7,4 +7,6 @@ public interface MotService {
     void createMotUser(MotDTO motDTO);
 
     MotDTO getMotById(String userId);
+
+    MotDTO updateMotUser(String userId, String fullName, String phoneNumber);
 }

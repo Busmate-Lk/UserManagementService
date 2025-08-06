@@ -26,4 +26,11 @@ public class MotController {
         // System.out.println(conductorService.getconductorsById(userId));
         return motService.getMotById(userId);
     }
+
+    @PutMapping(path = "/update")
+    public MotDTO updateMotUser(@RequestParam String userId, @RequestParam String fullName, @RequestParam String phoneNumber) {
+        return motService.updateMotUser(userId, fullName, phoneNumber);
+    }
+
+
 }

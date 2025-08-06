@@ -86,23 +86,6 @@ public class MotServiceIMPL implements MotService {
 
     }
 
-    @Override
-    public MotDTO getMotById(String userId) {
-        User user = userRepo.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
-        MotDTO motDTO = new MotDTO();
-        motDTO.setUserId(user.getUserId());
-        motDTO.setFullName(user.getFullName());
-        motDTO.setUsername(user.getUsername());
-        motDTO.setEmail(user.getEmail());
-        motDTO.setAccountStatus(user.getAccountStatus());
-        motDTO.setIsVerified(user.getIsVerified());
-        motDTO.setRole(user.getRole());
-
-
-        return motDTO;
-    }
-
     private String extractUserIdFromJson(String json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root = mapper.readTree(json);
@@ -115,5 +98,35 @@ public class MotServiceIMPL implements MotService {
         } else {
             throw new RuntimeException("Unexpected Supabase response: " + json);
         }
+    }
+
+    private MotDTO mapUserToMotDTO(User user) {
+        MotDTO motDTO = new MotDTO();
+        motDTO.setUserId(user.getUserId());
+        motDTO.setFullName(user.getFullName());
+        motDTO.setUsername(user.getUsername());
+        motDTO.setEmail(user.getEmail());
+        motDTO.setAccountStatus(user.getAccountStatus());
+        motDTO.setIsVerified(user.getIsVerified());
+        motDTO.setRole(user.getRole());
+//        motDTO.set(user.getPhoneNumber());
+        return motDTO;
+    }
+
+    @Override
+    public MotDTO getMotById(String userId) {
+        User user = userRepo.findById(UUID.fromString(userId))
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+        return mapUserToMotDTO(user);
+    }
+
+    @Override
+    public MotDTO updateMotUser(String userId, String fullName, String phoneNumber) {
+        User user = userRepo.findById(UUID.fromString(userId))
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+        user.setFullName(fullName);
+        user.setPhoneNumber(phoneNumber);
+        userRepo.save(user);
+        return mapUserToMotDTO(user);
     }
 }
