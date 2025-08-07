@@ -260,5 +260,24 @@ public class ConductorServiceIMPL implements ConductorService {
         return conductorDTOs;
     }
 
+    @Override
+    public void deleteConductor(UUID userId) {
+
+        // Find the user
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        // Find the conductor linked to the user
+        Conductor conductor = conductorRepo.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Conductor not found for user ID: " + userId));
+
+        // Delete the conductor
+        conductorRepo.delete(conductor);
+
+        // Set account status to deactivate
+        user.setAccountStatus("deactivate");
+        userRepo.save(user);
+    }
+
 
 }

@@ -119,7 +119,6 @@ public class TimekeeperServiceIMPL implements TimekeeperService {
         timekeeperDTO.setAssign_stand(timekeeper.getAssignStand());
         timekeeperDTO.setNic(timekeeper.getNic());
         timekeeperDTO.setProvince(timekeeper.getProvince());
-        // Note: password is not set for security reasons
 
         return timekeeperDTO;
     }

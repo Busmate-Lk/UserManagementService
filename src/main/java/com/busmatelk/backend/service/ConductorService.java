@@ -15,4 +15,5 @@ public interface ConductorService {
     List<ConductorDTO> getAllConductors();
 
 
+    void deleteConductor(UUID userId);
 }
