@@ -117,6 +117,7 @@ public class MotServiceIMPL implements MotService {
     public MotDTO getMotById(String userId) {
         User user = userRepo.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+//        System.out.println(user);
         return mapUserToMotDTO(user);
     }
 
