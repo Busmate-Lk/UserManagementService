@@ -165,7 +165,7 @@ public class ConductorServiceIMPL implements ConductorService {
 //        conductorDTO.setShift_status(conductor.getShift_status());
 //        conductorDTO.setAssign_operator_id(conductor.getAssign_operator_id());
 
-        System.out.println(user);
+//        System.out.println(user);
         return conductorDTO;
     }
 
