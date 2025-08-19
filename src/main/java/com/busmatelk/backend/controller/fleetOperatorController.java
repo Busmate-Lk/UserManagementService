@@ -1,6 +1,7 @@
 package com.busmatelk.backend.controller;
 
 import com.busmatelk.backend.dto.fleetOperatorDTO;
+import com.busmatelk.backend.kafka.OperatorProducer;
 import com.busmatelk.backend.service.fleetOperatorProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,10 +20,18 @@ public class fleetOperatorController {
     @Autowired
     private fleetOperatorProfileService fleetOperatorProfileService;
 
+    @Autowired
+    private OperatorProducer operatorProducer;
+
+
+
     @PostMapping("/register")
     public ResponseEntity<?> registerFleetOperator(@RequestBody fleetOperatorDTO fleetOperatorDTO) {
         try {
             fleetOperatorProfileService.addfleetOperatorProfile(fleetOperatorDTO);
+            // Optionally, you can publish an event to Kafka here if needed
+
+            operatorProducer.publishOperatorCreated(fleetOperatorDTO.toJson());
             return ResponseEntity.status(HttpStatus.CREATED).body("Fleet operator registered successfully.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
