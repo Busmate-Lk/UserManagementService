@@ -51,4 +51,4 @@ jobs:
 
             docker build -t ${{ github.event.repository.name }} .
             docker rm -f ${{ github.event.repository.name }} || true
-            docker run -d --name ${{ github.event.repository.name }} -p 8081:8081 ${{ github.event.repository.name }}
+            docker run -d --restart unless-stopped --name ${{ github.event.repository.name }} -p 8081:8081 ${{ github.event.repository.name }}
